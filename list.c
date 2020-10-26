@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 void initNumber(number *n) {
   n->head = NULL;
   n->tail = NULL;
@@ -19,6 +18,7 @@ void addToNumber(number *n, int d) {
   p->next = NULL;
   p->prev = NULL;
   if (n->head == NULL) {
+    n->size++;
     n->head = p;
     n->tail = p;
     return;
@@ -37,7 +37,9 @@ void printNum(number n) {
     printf("Number is empty\n");
     return;
   }
-
+  if (n.sign == -1) {
+    printf("-");
+  }
   while (p) {
     printf("%d", p->data);
     p = p->next;
@@ -58,6 +60,9 @@ void destroyNumber(number *n) {
     p = q;
   }
   n->head = n->tail = NULL;
+  n->size = 0;
+  n->sign = PLUS;
+  return;
 }
 
 void pushToNumber(number *n, int d) {
@@ -72,6 +77,7 @@ void pushToNumber(number *n, int d) {
     return;
   }
   nn->next = n->head;
+  n->head->prev = nn;
   n->head = nn;
   return;
 }

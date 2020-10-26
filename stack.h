@@ -12,6 +12,7 @@ void npush(n_stack *, number *);
 number *npop(n_stack *);
 int nisEmpty(n_stack);
 number *npeek(n_stack);
+void display(n_stack n);
 
 /*----------------------------------------------------------*/
 

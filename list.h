@@ -1,3 +1,6 @@
+#ifndef LIST_H
+#define LIST_H
+
 #define PLUS 1
 #define MINUS -1
 
@@ -18,3 +21,4 @@ void printNum(number n);
 void destroyNumber(number *n);
 void pushToNumber(number *n, int d);
 void remov(number *n, int position);
+#endif

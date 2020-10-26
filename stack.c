@@ -1,4 +1,6 @@
 #include "stack.h"
+#include "functions.h"
+#include "list.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,6 +56,15 @@ number *npeek(n_stack n) {
     return NULL;
   }
   return n->data;
+}
+
+void display(n_stack n) {
+  n_node *p = n;
+  while (p) {
+    printNum(*(p->data));
+    p = p->next;
+  }
+  printf("\n");
 }
 
 /*------------------------------------------------------------*/
