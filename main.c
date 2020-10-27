@@ -39,22 +39,30 @@ number *infixEval(char *exp) {
   n_stack n;
   cinitStack(&c);
   ninitStack(&n);
+  int signFlag = 0;
+  int startFlag = 1;
   int len = strlen(exp);
   int i = 0;
   for (i = 0; i < len; i++) {
-    if (exp[i] == ' ')
+    if (exp[i] == ' ') {
+      startFlag = 0;
       continue;
-    else if (exp[i] == '(') {
+    } else if (exp[i] == '(') {
       cpush(&c, exp[i]);
     } else if (isdigit(exp[i])) {
       while (i < len && isdigit(exp[i])) {
         addToNumber(n1, (exp[i] - '0'));
         i++;
       }
+      if (signFlag) {
+        n1->sign = MINUS;
+        signFlag = 0;
+      }
       npush(&n, n1);
       n1 = (number *)malloc(sizeof(number));
       initNumber(n1);
       i--;
+      startFlag = 0;
     } else if (exp[i] == ')') {
       while (!cisempty(c) && cpeek(c) != '(') {
         n1 = npop(&n);
@@ -68,7 +76,15 @@ number *infixEval(char *exp) {
       }
       if (!cisempty(c))
         cpop(&c);
-    } else {
+      startFlag = 0;
+    } else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' ||
+               exp[i] == '/') {
+      if (startFlag && exp[i] == '-') {
+        if (isdigit(exp[i + 1])) {
+          signFlag = 1;
+          continue;
+        }
+      }
       while (!cisempty(c) && precedence(cpeek(c)) >= precedence(exp[i])) {
         n1 = npop(&n);
         n2 = npop(&n);
@@ -80,6 +96,10 @@ number *infixEval(char *exp) {
         initNumber(n2);
       }
       cpush(&c, exp[i]);
+      startFlag = 0;
+    } else {
+      printf("Invalid symbols\n");
+      return NULL;
     }
   }
 

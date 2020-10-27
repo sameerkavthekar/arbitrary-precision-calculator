@@ -23,6 +23,11 @@ number *addNums(number *n1, number *n2) {
   number *sumNum;
   sumNum = (number *)malloc(sizeof(number));
   initNumber(sumNum);
+  if (n1->sign != n2->sign) {
+    n1->sign = n2->sign;
+    sumNum = subNums(n2, n1);
+    return sumNum;
+  }
   while (p && q) {
     int sum = p->data + q->data + carry;
     carry = sum / 10;
@@ -71,6 +76,12 @@ number *subNums(number *n1, number *n2) {
   number *diffNum = (number *)malloc(sizeof(number));
   initNumber(diffNum);
   node *p, *q;
+  if (n1->sign != n2->sign) {
+    n1->sign = n2->sign;
+    diffNum = addNums(n1, n2);
+    diffNum->sign = MINUS;
+    return diffNum;
+  }
   if (n1->head->data > n2->head->data) {
     q = n1->tail;
     p = n2->tail;
