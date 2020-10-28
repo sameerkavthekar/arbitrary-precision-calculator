@@ -3,20 +3,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-number *addNums(number *n1, number *n2) {
-  int i = n1->size;
-  int j = n2->size;
+void equaliseNums(number **n1, number **n2) {
+  int i = (*n1)->size;
+  int j = (*n2)->size;
   if (i > j) {
     while (i > j) {
-      pushToNumber(n2, 0);
+      pushToNumber(*n2, 0);
       j++;
     }
   } else {
     while (j > i) {
-      pushToNumber(n1, 0);
+      pushToNumber(*n1, 0);
       i++;
     }
   }
+}
+
+number *addNums(number *n1, number *n2) {
+  equaliseNums(&n1, &n2);
   node *p = n1->tail;
   node *q = n2->tail;
   int carry = 0;
@@ -60,19 +64,7 @@ void removeTrailingZeros(number *n) {
 }
 
 number *subNums(number *n1, number *n2) {
-  int i = n1->size;
-  int j = n2->size;
-  if (i > j) {
-    while (i > j) {
-      pushToNumber(n2, 0);
-      j++;
-    }
-  } else {
-    while (j > i) {
-      pushToNumber(n1, 0);
-      i++;
-    }
-  }
+  equaliseNums(&n1, &n2);
   number *diffNum = (number *)malloc(sizeof(number));
   initNumber(diffNum);
   node *p, *q;
@@ -104,4 +96,43 @@ number *subNums(number *n1, number *n2) {
   }
   removeTrailingZeros(diffNum);
   return diffNum;
+}
+
+number *mulNums(number *n1, number *n2) {
+  number *mulNum = (number *)malloc(sizeof(number));
+  initNumber(mulNum);
+  int a = n1->size;
+  int b = n2->size;
+  int i, j, a1 = 0, a2 = 0;
+  int temp_result[2 * a];
+  for (i = 0; i < 2 * a; i++)
+    temp_result[i] = 0;
+  int k = 2 * a - 1;
+  node *t2 = n2->tail;
+  for (i = 0; i < b; i++) {
+    node *t1 = n1->tail;
+    int carry1 = 0, carry2 = 0;
+    for (j = k - i; j > a - 2; j--) {
+      if (t1 != NULL && t2 != NULL) {
+        a1 = t1->data * t2->data + carry1;
+        t1 = t1->prev;
+        carry1 = a1 / 10;
+        a1 = a1 % 10;
+        a2 = temp_result[j] + a1 + carry2;
+        carry2 = a2 / 10;
+        a2 = a2 % 10;
+        temp_result[j] = a2;
+      } else {
+        break;
+      }
+    }
+    temp_result[j] = carry1 + carry2 + temp_result[j];
+    a--;
+    t2 = t2->prev;
+  }
+  for (i = k; i >= a - 1 && i >= 0; i--) {
+    pushToNumber(mulNum, temp_result[i]);
+  }
+  removeTrailingZeros(mulNum);
+  return mulNum;
 }

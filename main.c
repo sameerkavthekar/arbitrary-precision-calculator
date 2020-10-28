@@ -22,8 +22,8 @@ number *applyOp(number *a, number *b, char op) {
     return addNums(a, b);
   case '-':
     return subNums(a, b);
-    // case '*':
-    //   return a * b;
+  case '*':
+    return mulNums(a, b);
     // case '/':
     //   return a / b;
   }
@@ -113,8 +113,8 @@ number *infixEval(char *exp) {
     initNumber(n1);
     initNumber(n2);
   }
-  free(n1);
-  free(n2);
+  destroyNumber(n1);
+  destroyNumber(n2);
 
   return npop(&n);
 }
