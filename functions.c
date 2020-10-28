@@ -9,11 +9,13 @@ void equaliseNums(number **n1, number **n2) {
   if (i > j) {
     while (i > j) {
       pushToNumber(*n2, 0);
+      (*n2)->size++;
       j++;
     }
   } else {
     while (j > i) {
       pushToNumber(*n1, 0);
+      (*n1)->size++;
       i++;
     }
   }
@@ -91,6 +93,7 @@ number *subNums(number *n1, number *n2) {
     } else
       borrow = 0;
     pushToNumber(diffNum, sub);
+    diffNum->size++;
     p = p->prev;
     q = q->prev;
   }
@@ -101,6 +104,10 @@ number *subNums(number *n1, number *n2) {
 number *mulNums(number *n1, number *n2) {
   number *mulNum = (number *)malloc(sizeof(number));
   initNumber(mulNum);
+  if (n1->size > n2->size) {
+    mulNum = mulNums(n2, n1);
+    return mulNum;
+  }
   int a = n1->size;
   int b = n2->size;
   int i, j, a1 = 0, a2 = 0;
@@ -132,6 +139,7 @@ number *mulNums(number *n1, number *n2) {
   }
   for (i = k; i >= a - 1 && i >= 0; i--) {
     pushToNumber(mulNum, temp_result[i]);
+    mulNum->size++;
   }
   removeTrailingZeros(mulNum);
   return mulNum;
