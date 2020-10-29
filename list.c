@@ -79,5 +79,6 @@ void pushToNumber(number *n, int d) {
   nn->next = n->head;
   n->head->prev = nn;
   n->head = nn;
+  n->size++;
   return;
 }

@@ -24,9 +24,10 @@ number *applyOp(number *a, number *b, char op) {
     return subNums(a, b);
   case '*':
     return mulNums(a, b);
-    // case '/':
-    //   return a / b;
+  case '/':
+    return mulNums(a, b);
   }
+  return NULL;
 }
 
 number *infixEval(char *exp) {
@@ -44,8 +45,10 @@ number *infixEval(char *exp) {
   int len = strlen(exp);
   int i = 0;
   for (i = 0; i < len; i++) {
-    if (exp[i] == ' ') {
+    if (i != 0) {
       startFlag = 0;
+    }
+    if (exp[i] == ' ') {
       continue;
     } else if (exp[i] == '(') {
       cpush(&c, exp[i]);
@@ -56,13 +59,11 @@ number *infixEval(char *exp) {
       }
       if (signFlag) {
         n1->sign = MINUS;
-        signFlag = 0;
       }
       npush(&n, n1);
       n1 = (number *)malloc(sizeof(number));
       initNumber(n1);
       i--;
-      startFlag = 0;
     } else if (exp[i] == ')') {
       while (!cisempty(c) && cpeek(c) != '(') {
         n1 = npop(&n);
@@ -76,16 +77,15 @@ number *infixEval(char *exp) {
       }
       if (!cisempty(c))
         cpop(&c);
-      startFlag = 0;
     } else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' ||
                exp[i] == '/') {
-      if (startFlag && exp[i] == '-') {
+      if (startFlag == 1 && exp[i] == '-') {
         if (isdigit(exp[i + 1])) {
           signFlag = 1;
           continue;
         }
       }
-      while (!cisempty(c) && precedence(cpeek(c)) >= precedence(exp[i])) {
+      while (cisempty(c) != 1 && precedence(cpeek(c)) >= precedence(exp[i])) {
         n1 = npop(&n);
         n2 = npop(&n);
         char op = cpop(&c);
@@ -96,14 +96,13 @@ number *infixEval(char *exp) {
         initNumber(n2);
       }
       cpush(&c, exp[i]);
-      startFlag = 0;
     } else {
       printf("Invalid symbols\n");
       return NULL;
     }
   }
 
-  while (!cisempty(c)) {
+  while (cisempty(c) != 1) {
     n1 = npop(&n);
     n2 = npop(&n);
     char op = cpop(&c);
