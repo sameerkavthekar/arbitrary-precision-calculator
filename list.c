@@ -73,6 +73,7 @@ void pushToNumber(number *n, int d) {
   nn->next = NULL;
   nn->prev = NULL;
   if (n->head == NULL) {
+    n->size++;
     n->head = n->tail = nn;
     return;
   }

@@ -2,6 +2,7 @@
 #include "list.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void equaliseNums(number **n1, number **n2) {
   int i = (*n1)->size;
@@ -36,6 +37,27 @@ void removeTrailingZeros(number *n) {
   return;
 }
 
+int compare(number *n1, number *n2) {
+  node *p = n1->head;
+  node *q = n2->head;
+  if (n1->size > n2->size) {
+    return 1;
+  } else if (n2->size > n1->size) {
+    return -1;
+  } else {
+    while (p && q) {
+      if (p->data > q->data)
+        return 1;
+      else if (q->data > p->data) {
+        return -1;
+      }
+      p = p->next;
+      q = q->next;
+    }
+  }
+  return 0;
+}
+
 number *addNums(number *n1, number *n2) {
   equaliseNums(&n1, &n2);
   node *p = n1->tail;
@@ -64,6 +86,44 @@ number *addNums(number *n1, number *n2) {
   return sumNum;
 }
 
+number *subNumsWithoutFree(number *n1, number *n2) {
+  equaliseNums(&n1, &n2);
+  number *diffNum = (number *)malloc(sizeof(number));
+  initNumber(diffNum);
+  node *p, *q;
+  if (n1->sign != n2->sign) {
+    n1->sign = n2->sign;
+    diffNum = addNums(n1, n2);
+    diffNum->sign = MINUS;
+    return diffNum;
+  }
+  if ((n1->head->data > n2->head->data) && (n1->size > n2->size)) {
+    q = n1->tail;
+    p = n2->tail;
+    diffNum->sign = MINUS;
+  } else {
+    p = n1->tail;
+    q = n2->tail;
+  }
+  int borrow = 0;
+  while (p && q) {
+    int sub = q->data - p->data - borrow;
+    if (sub < 0) {
+      sub = sub + 10;
+      borrow = 1;
+    } else
+      borrow = 0;
+    pushToNumber(diffNum, sub);
+    p = p->prev;
+    q = q->prev;
+  }
+  removeTrailingZeros(diffNum);
+  removeTrailingZeros(n1);
+  removeTrailingZeros(n2);
+  diffNum->sign = n1->sign;
+  return diffNum;
+}
+
 number *subNums(number *n1, number *n2) {
   equaliseNums(&n1, &n2);
   number *diffNum = (number *)malloc(sizeof(number));
@@ -75,7 +135,7 @@ number *subNums(number *n1, number *n2) {
     diffNum->sign = MINUS;
     return diffNum;
   }
-  if (n1->head->data > n2->head->data) {
+  if ((n1->head->data > n2->head->data) && (n1->size > n2->size)) {
     q = n1->tail;
     p = n2->tail;
     diffNum->sign = MINUS;
@@ -100,6 +160,7 @@ number *subNums(number *n1, number *n2) {
   free(n1);
   free(n2);
   removeTrailingZeros(diffNum);
+  diffNum->sign = n1->sign;
   return diffNum;
 }
 
@@ -148,4 +209,52 @@ number *mulNums(number *n1, number *n2) {
   free(n2);
   removeTrailingZeros(mulNum);
   return mulNum;
+}
+
+number *divNums(number *n1, number *n2) {
+  // Create temp number and keep appending numbers to it till it is less than
+  // than n2 Then multiply n1 by 1,2,3 till we get a number thats just less than
+  // th temp number Subtract the product from the temp number. Append digits
+  // from n1 to the difference and repeat process till there are no more nums in
+  // n1 is the divisor and n2 is the number. n2/n1
+  number *temp = (number *)malloc(sizeof(number));
+  number *temp2 = NULL;
+  number *Q = (number *)malloc(sizeof(number));
+  number *R = (number *)malloc(sizeof(number));
+  initNumber(temp);
+  initNumber(Q);
+  initNumber(R);
+  int i = 0;
+  node *q = n2->head;
+  pushToNumber(temp, q->data);
+  while (compare(temp, n1) == -1) {
+    i++;
+    q = q->next;
+    addToNumber(temp, q->data);
+  }
+  while (n2->size > i) {
+    int j = 0;
+    int k = compare(temp, n1);
+    printNum(*temp);
+    while (k != -1) {
+      temp2 = temp;
+      temp = subNumsWithoutFree(n1, temp);
+      destroyNumber(temp2);
+      free(temp2);
+      j++;
+      k = compare(temp, n1);
+      if (k == 0) {
+        j++;
+        break;
+      }
+    }
+    ++i;
+    addToNumber(Q, j);
+    q = q->next;
+    if (q)
+      addToNumber(temp, q->data);
+  }
+  if (Q->size == 0)
+    pushToNumber(Q, 0);
+  return Q;
 }
