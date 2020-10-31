@@ -34,6 +34,11 @@ void removeTrailingZeros(number *n) {
   if (n->head == NULL) {
     return;
   }
+  if (isNumberZero(n)) {
+    destroyNumber(n);
+    addToNumber(n, 0);
+    return;
+  }
   node *p = n->head;
   node *q = NULL;
   while (p->data == 0) {
@@ -318,3 +323,7 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
     return temp;
   }
 }
+
+// number *power(number *n1, number *n2) {
+
+// }

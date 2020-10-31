@@ -11,6 +11,7 @@ int main() {
   n3 = (number *)malloc(sizeof(number));
   initNumber(n3);
   n3 = infixEval(exp);
-  printNum(*n3);
+  if (n3)
+    printNum(*n3);
   free(n3);
 }
