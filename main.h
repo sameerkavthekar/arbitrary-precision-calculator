@@ -10,7 +10,7 @@
 int precedence(char op) {
   if (op == '+' || op == '-')
     return 1;
-  if (op == '*' || op == '/')
+  if (op == '*' || op == '/' || op == '%')
     return 2;
   return 0;
 }
@@ -24,7 +24,9 @@ number *applyOp(number *a, number *b, char op) {
   case '*':
     return mulNums(a, b);
   case '/':
-    return divNums(a, b);
+    return divNums(a, b, 0);
+  case '%':
+    return divNums(a, b, 1);
   }
   return NULL;
 }
@@ -78,7 +80,7 @@ number *infixEval(char *exp) {
       if (!cisempty(c))
         cpop(&c);
     } else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' ||
-               exp[i] == '/') {
+               exp[i] == '/' || exp[i] == '%') {
       if (startFlag == 1 && exp[i] == '-') {
         if (isdigit(exp[i + 1])) {
           signFlag = 1;

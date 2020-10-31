@@ -20,6 +20,16 @@ void equaliseNums(number **n1, number **n2) {
   }
 }
 
+int isNumberZero(number *n1) {
+  node *p = n1->head;
+  while (p) {
+    if (p->data != 0)
+      return 0;
+    p = p->next;
+  }
+  return 1;
+}
+
 void removeTrailingZeros(number *n) {
   if (n->head == NULL) {
     return;
@@ -171,6 +181,14 @@ number *mulNums(number *n1, number *n2) {
   if (n1->sign != n2->sign) {
     mulNum->sign = MINUS;
   }
+  if (isNumberZero(n1) || isNumberZero(n2)) {
+    destroyNumber(n1);
+    destroyNumber(n2);
+    free(n1);
+    free(n2);
+    addToNumber(mulNum, 0);
+    return mulNum;
+  }
   int a = n1->size;
   int b = n2->size;
   int i, j, a1 = 0, a2 = 0;
@@ -211,22 +229,48 @@ number *mulNums(number *n1, number *n2) {
   return mulNum;
 }
 
-number *divNums(number *n1, number *n2) {
-  // Create temp number and keep appending numbers to it till it is less than
-  // than n2 Then multiply n1 by 1,2,3 till we get a number thats just less than
-  // th temp number Subtract the product from the temp number. Append digits
-  // from n1 to the difference and repeat process till there are no more nums in
+number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
+  // Long Division Algorithm
   // n1 is the divisor and n2 is the number. n2/n1
   number *temp = (number *)malloc(sizeof(number));
   number *temp2 = NULL;
   number *Q = (number *)malloc(sizeof(number));
-  number *R = (number *)malloc(sizeof(number));
   initNumber(temp);
   initNumber(Q);
-  initNumber(R);
   int i = 0;
   node *q = n2->head;
+
+  if (isNumberZero(n1)) {
+    printf("ERROR: Cannot divide with zero\n");
+    exit(0);
+  }
+
+  if (compare(n1, n2) == 0) {
+    if (returnRemainderOrQuotient == 1) {
+      pushToNumber(Q, 0);
+      free(temp);
+      return Q;
+    }
+    pushToNumber(Q, 1);
+    free(temp);
+    return Q;
+  } else if (compare(n1, n2) == 1) {
+    if (returnRemainderOrQuotient == 1) {
+      node *p = n2->head;
+      while (p) {
+        addToNumber(Q, p->data);
+        p = p->next;
+      }
+      free(temp);
+      return Q;
+    }
+    pushToNumber(Q, 0);
+    free(temp);
+    return Q;
+  }
+
   pushToNumber(temp, q->data);
+
   while (compare(temp, n1) == -1) {
     i++;
     q = q->next;
@@ -235,7 +279,6 @@ number *divNums(number *n1, number *n2) {
   while (n2->size > i) {
     int j = 0;
     int k = compare(temp, n1);
-    printNum(*temp);
     while (k != -1) {
       temp2 = temp;
       temp = subNumsWithoutFree(n1, temp);
@@ -256,5 +299,22 @@ number *divNums(number *n1, number *n2) {
   }
   if (Q->size == 0)
     pushToNumber(Q, 0);
-  return Q;
+  destroyNumber(n2);
+  free(n2);
+  if (returnRemainderOrQuotient == 0) {
+    destroyNumber(temp);
+    free(temp);
+    return Q;
+  } else {
+    if (compare(temp, n1) == 0) {
+      destroyNumber(n1);
+      free(n1);
+      destroyNumber(temp);
+      pushToNumber(temp, 0);
+      return temp;
+    }
+    destroyNumber(Q);
+    free(Q);
+    return temp;
+  }
 }
