@@ -20,13 +20,15 @@ number *applyOp(number *a, number *b, char op) {
   case '+':
     return addNums(a, b);
   case '-':
-    return subNums(a, b);
+    return subNums(a, b, 1);
   case '*':
-    return mulNums(a, b);
+    return mulNums(a, b, 1);
   case '/':
     return divNums(a, b, 0);
   case '%':
     return divNums(a, b, 1);
+  case '^':
+    return power(a, b);
   }
   return NULL;
 }
@@ -80,7 +82,7 @@ number *infixEval(char *exp) {
       if (!cisempty(c))
         cpop(&c);
     } else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' ||
-               exp[i] == '/' || exp[i] == '%') {
+               exp[i] == '/' || exp[i] == '%' || exp[i] == '^') {
       if (startFlag == 1 && exp[i] == '-') {
         if (isdigit(exp[i + 1])) {
           signFlag = 1;

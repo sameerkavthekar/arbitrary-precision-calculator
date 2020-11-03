@@ -33,6 +33,7 @@ void addToNumber(number *n, int d) {
 
 void printNum(number n) {
   node *p = n.head;
+  int i = 0;
   if (n.head == NULL) {
     printf("Number is empty\n");
     return;
@@ -43,6 +44,12 @@ void printNum(number n) {
   while (p) {
     printf("%d", p->data);
     p = p->next;
+    i++;
+    if (i > 50) {
+      printf(" \\");
+      printf("\n");
+      i = 0;
+    }
   }
   printf("\n");
   return;
@@ -81,5 +88,16 @@ void pushToNumber(number *n, int d) {
   n->head->prev = nn;
   n->head = nn;
   n->size++;
+  return;
+}
+
+void copyNumber(number *n1, number *n2) {
+  n2->sign = n1->sign;
+  n2->size = n1->size;
+  node *p = n1->head;
+  while (p) {
+    addToNumber(n2, p->data);
+    p = p->next;
+  }
   return;
 }

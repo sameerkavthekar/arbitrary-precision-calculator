@@ -21,4 +21,5 @@ void printNum(number n);
 void destroyNumber(number *n);
 void pushToNumber(number *n, int d);
 void remov(number *n, int position);
+void copyNumber(number *n1, number *n2);
 #endif

@@ -83,7 +83,7 @@ number *addNums(number *n1, number *n2) {
   initNumber(sumNum);
   if (n1->sign != n2->sign) {
     n1->sign = n2->sign;
-    sumNum = subNums(n2, n1);
+    sumNum = subNums(n2, n1, 1);
     return sumNum;
   }
   while (p && q) {
@@ -101,24 +101,27 @@ number *addNums(number *n1, number *n2) {
   return sumNum;
 }
 
-number *subNumsWithoutFree(number *n1, number *n2) {
-  equaliseNums(&n1, &n2);
+number *subNums(number *n1, number *n2, int freeNums) {
   number *diffNum = (number *)malloc(sizeof(number));
   initNumber(diffNum);
   node *p, *q;
+  if (compare(n2, n1) == 1) {
+    p = n1->tail;
+    q = n2->tail;
+  } else if (compare(n1, n2) == 1) {
+    q = n1->tail;
+    p = n2->tail;
+    diffNum->sign = MINUS;
+  } else if (compare(n1, n2) == 0) {
+    addToNumber(diffNum, 0);
+    return diffNum;
+  }
+  equaliseNums(&n1, &n2);
   if (n1->sign != n2->sign) {
     n1->sign = n2->sign;
     diffNum = addNums(n1, n2);
     diffNum->sign = MINUS;
     return diffNum;
-  }
-  if ((n1->head->data > n2->head->data) && (n1->size > n2->size)) {
-    q = n1->tail;
-    p = n2->tail;
-    diffNum->sign = MINUS;
-  } else {
-    p = n1->tail;
-    q = n2->tail;
   }
   int borrow = 0;
   while (p && q) {
@@ -132,54 +135,20 @@ number *subNumsWithoutFree(number *n1, number *n2) {
     p = p->prev;
     q = q->prev;
   }
-  removeTrailingZeros(diffNum);
-  removeTrailingZeros(n1);
-  removeTrailingZeros(n2);
-  diffNum->sign = n1->sign;
-  return diffNum;
-}
-
-number *subNums(number *n1, number *n2) {
-  equaliseNums(&n1, &n2);
-  number *diffNum = (number *)malloc(sizeof(number));
-  initNumber(diffNum);
-  node *p, *q;
-  if (n1->sign != n2->sign) {
-    n1->sign = n2->sign;
-    diffNum = addNums(n1, n2);
-    diffNum->sign = MINUS;
-    return diffNum;
-  }
-  if ((n1->head->data > n2->head->data) && (n1->size > n2->size)) {
-    q = n1->tail;
-    p = n2->tail;
-    diffNum->sign = MINUS;
+  if (freeNums) {
+    destroyNumber(n1);
+    destroyNumber(n2);
+    free(n1);
+    free(n2);
   } else {
-    p = n1->tail;
-    q = n2->tail;
+    removeTrailingZeros(n1);
+    removeTrailingZeros(n2);
   }
-  int borrow = 0;
-  while (p && q) {
-    int sub = q->data - p->data - borrow;
-    if (sub < 0) {
-      sub = sub + 10;
-      borrow = 1;
-    } else
-      borrow = 0;
-    pushToNumber(diffNum, sub);
-    p = p->prev;
-    q = q->prev;
-  }
-  destroyNumber(n1);
-  destroyNumber(n2);
-  free(n1);
-  free(n2);
   removeTrailingZeros(diffNum);
-  diffNum->sign = n1->sign;
   return diffNum;
 }
 
-number *mulNums(number *n1, number *n2) {
+number *mulNums(number *n1, number *n2, int freeNums) {
   number *mulNum = (number *)malloc(sizeof(number));
   initNumber(mulNum);
   equaliseNums(&n1, &n2);
@@ -226,10 +195,12 @@ number *mulNums(number *n1, number *n2) {
   for (i = k; i >= a - 1 && i >= 0; i--) {
     pushToNumber(mulNum, temp_result[i]);
   }
-  destroyNumber(n1);
-  destroyNumber(n2);
-  free(n1);
-  free(n2);
+  if (freeNums) {
+    destroyNumber(n1);
+    destroyNumber(n2);
+    free(n1);
+    free(n2);
+  }
   removeTrailingZeros(mulNum);
   return mulNum;
 }
@@ -249,6 +220,39 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
     printf("ERROR: Cannot divide with zero\n");
     exit(0);
   }
+
+  int Q_sign = PLUS;
+  int temp_sign = PLUS;
+
+  switch (n1->sign) {
+  case PLUS:
+    switch (n2->sign) {
+    case PLUS:
+      temp_sign = PLUS;
+      Q_sign = PLUS;
+      break;
+    case MINUS:
+      Q_sign = MINUS;
+      temp_sign = PLUS;
+      break;
+    }
+    break;
+  case MINUS:
+    switch (n2->sign) {
+    case PLUS:
+      Q_sign = MINUS;
+      temp_sign = MINUS;
+      break;
+    case MINUS:
+      Q_sign = PLUS;
+      temp_sign = MINUS;
+      break;
+    }
+    break;
+  }
+
+  n1->sign = PLUS;
+  n2->sign = PLUS;
 
   if (compare(n1, n2) == 0) {
     if (returnRemainderOrQuotient == 1) {
@@ -283,20 +287,23 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
   }
   while (n2->size > i) {
     int j = 0;
-    int k = compare(temp, n1);
-    while (k != -1) {
-      temp2 = temp;
-      temp = subNumsWithoutFree(n1, temp);
-      destroyNumber(temp2);
-      free(temp2);
-      j++;
-      k = compare(temp, n1);
-      if (k == 0) {
+    if (!isNumberZero(temp)) {
+      int k = compare(temp, n1);
+      while (k != -1) {
+        temp2 = temp;
+        temp = subNums(n1, temp, 0);
+        destroyNumber(temp2);
+        free(temp2);
         j++;
-        break;
+        k = compare(temp, n1);
+        if (k == 0) {
+          j++;
+          break;
+        }
       }
     }
     ++i;
+    j = j % 10;
     addToNumber(Q, j);
     q = q->next;
     if (q)
@@ -309,6 +316,7 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
   if (returnRemainderOrQuotient == 0) {
     destroyNumber(temp);
     free(temp);
+    Q->sign = Q_sign;
     return Q;
   } else {
     if (compare(temp, n1) == 0) {
@@ -320,10 +328,58 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
     }
     destroyNumber(Q);
     free(Q);
+    removeTrailingZeros(temp);
+    temp->sign = temp_sign;
     return temp;
   }
 }
 
-// number *power(number *n1, number *n2) {
+number *power(number *n1, number *n2) {
+  number *pow = (number *)malloc(sizeof(number));
+  number *temp = (number *)malloc(sizeof(number));
+  number *temp2 = NULL;
+  initNumber(pow);
 
-// }
+  if (isNumberZero(n1)) {
+    addToNumber(pow, 1);
+    destroyNumber(n1);
+    destroyNumber(n2);
+    free(n1);
+    free(n2);
+    return pow;
+  } else if (isNumberZero(n2)) {
+    addToNumber(pow, 0);
+    destroyNumber(n1);
+    destroyNumber(n2);
+    free(n1);
+    free(n2);
+    return pow;
+  }
+
+  number *UnityNumber = (number *)malloc(sizeof(number));
+  initNumber(UnityNumber);
+  pushToNumber(UnityNumber, 1);
+
+  if (compare(n1, UnityNumber) == 0) {
+    destroyNumber(n1);
+    free(n1);
+    return n2;
+  }
+
+  copyNumber(n2, temp);
+  while (compare(n1, UnityNumber) != 0) {
+    pow = mulNums(temp, n2, 0);
+    destroyNumber(temp);
+    copyNumber(pow, temp);
+    temp2 = n1;
+    n1 = subNums(UnityNumber, n1, 0);
+    destroyNumber(temp2);
+  }
+  destroyNumber(n1);
+  destroyNumber(n2);
+  destroyNumber(temp);
+  free(n1);
+  free(n2);
+  free(temp);
+  return pow;
+}
