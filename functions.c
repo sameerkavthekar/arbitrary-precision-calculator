@@ -258,10 +258,18 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
     if (returnRemainderOrQuotient == 1) {
       pushToNumber(Q, 0);
       free(temp);
+      destroyNumber(n1);
+      destroyNumber(n2);
+      free(n1);
+      free(n2);
       return Q;
     }
     pushToNumber(Q, 1);
     free(temp);
+    destroyNumber(n1);
+    destroyNumber(n2);
+    free(n1);
+    free(n2);
     return Q;
   } else if (compare(n1, n2) == 1) {
     if (returnRemainderOrQuotient == 1) {
@@ -270,9 +278,17 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
         addToNumber(Q, p->data);
         p = p->next;
       }
+      destroyNumber(n1);
+      destroyNumber(n2);
+      free(n1);
+      free(n2);
       free(temp);
       return Q;
     }
+    destroyNumber(n1);
+    destroyNumber(n2);
+    free(n1);
+    free(n2);
     pushToNumber(Q, 0);
     free(temp);
     return Q;
@@ -285,6 +301,7 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
     q = q->next;
     addToNumber(temp, q->data);
   }
+
   while (n2->size > i) {
     int j = 0;
     if (!isNumberZero(temp)) {
@@ -362,11 +379,24 @@ number *power(number *n1, number *n2) {
 
   if (compare(n1, UnityNumber) == 0) {
     destroyNumber(n1);
+    destroyNumber(UnityNumber);
+    free(UnityNumber);
+    free(temp);
     free(n1);
     return n2;
   }
 
+  if (compare(n2, UnityNumber) == 0) {
+    destroyNumber(n1);
+    destroyNumber(n2);
+    free(n1);
+    free(n2);
+    free(temp);
+    return UnityNumber;
+  }
+
   copyNumber(n2, temp);
+  
   while (compare(n1, UnityNumber) != 0) {
     pow = mulNums(temp, n2, 0);
     destroyNumber(temp);
@@ -383,3 +413,7 @@ number *power(number *n1, number *n2) {
   free(temp);
   return pow;
 }
+
+//number *sineNumber(number *n1) {
+//  
+//}

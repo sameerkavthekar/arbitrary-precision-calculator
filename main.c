@@ -1,4 +1,5 @@
 #include "main.h"
+#include "list.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

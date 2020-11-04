@@ -12,6 +12,8 @@ int precedence(char op) {
     return 1;
   if (op == '*' || op == '/' || op == '%')
     return 2;
+  if (op == '^')
+    return 3;
   return 0;
 }
 
@@ -33,7 +35,10 @@ number *applyOp(number *a, number *b, char op) {
   return NULL;
 }
 
+typedef enum states { OPERATOR, NUMBER, START } states;
+
 number *infixEval(char *exp) {
+  states s1 = START;
   number *n1, *n2;
   n1 = (number *)malloc(sizeof(number));
   n2 = (number *)malloc(sizeof(number));
@@ -56,6 +61,10 @@ number *infixEval(char *exp) {
     } else if (exp[i] == '(') {
       cpush(&c, exp[i]);
     } else if (isdigit(exp[i])) {
+      if (s1 == NUMBER) {
+        printf("Syntax error\n");
+        return NULL;
+      }
       while (i < len && isdigit(exp[i])) {
         addToNumber(n1, (exp[i] - '0'));
         i++;
@@ -68,6 +77,7 @@ number *infixEval(char *exp) {
       n1 = (number *)malloc(sizeof(number));
       initNumber(n1);
       i--;
+      s1 = NUMBER;
     } else if (exp[i] == ')') {
       while (!cisempty(c) && cpeek(c) != '(') {
         n1 = npop(&n);
@@ -83,6 +93,10 @@ number *infixEval(char *exp) {
         cpop(&c);
     } else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' ||
                exp[i] == '/' || exp[i] == '%' || exp[i] == '^') {
+      if (s1 == OPERATOR) {
+        printf("Syntax Error\n");
+        return NULL;
+      }
       if (startFlag == 1 && exp[i] == '-') {
         if (isdigit(exp[i + 1])) {
           signFlag = 1;
@@ -100,10 +114,16 @@ number *infixEval(char *exp) {
         initNumber(n2);
       }
       cpush(&c, exp[i]);
+      s1 = OPERATOR;
     } else {
-      printf("Invalid symbols\n");
+      printf("Invalid symbol: %c\n", exp[i]);
       return NULL;
     }
+  }
+
+  if (s1 != NUMBER) {
+    printf("Syntax error\n");
+    return NULL;
   }
 
   while (cisempty(c) != 1) {
