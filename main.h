@@ -49,13 +49,10 @@ number *infixEval(char *exp) {
   cinitStack(&c);
   ninitStack(&n);
   int signFlag = 0;
-  int startFlag = 1;
   int len = strlen(exp);
   int i = 0;
+
   for (i = 0; i < len; i++) {
-    if (i != 0) {
-      startFlag = 0;
-    }
     if (exp[i] == ' ') {
       continue;
     } else if (exp[i] == '(') {
@@ -93,16 +90,19 @@ number *infixEval(char *exp) {
         cpop(&c);
     } else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' ||
                exp[i] == '/' || exp[i] == '%' || exp[i] == '^') {
-      if (s1 == OPERATOR) {
-        printf("Syntax Error\n");
-        return NULL;
-      }
-      if (startFlag == 1 && exp[i] == '-') {
+
+      if (exp[i] == '-') {
         if (isdigit(exp[i + 1])) {
           signFlag = 1;
           continue;
         }
       }
+
+      if (s1 == OPERATOR) {
+        printf("Syntax Error\n");
+        return NULL;
+      }
+
       while (cisempty(c) != 1 && precedence(cpeek(c)) >= precedence(exp[i])) {
         n1 = npop(&n);
         n2 = npop(&n);

@@ -74,6 +74,20 @@ int compare(number *n1, number *n2) {
 }
 
 number *addNums(number *n1, number *n2) {
+
+  removeTrailingZeros(n1);
+  removeTrailingZeros(n2);
+
+  if (isNumberZero(n1)) {
+    destroyNumber(n1);
+    free(n1);
+    return n2;
+  } else if (isNumberZero(n2)) {
+    destroyNumber(n2);
+    free(n2);
+    return n1;
+  }
+
   equaliseNums(&n1, &n2);
   node *p = n1->tail;
   node *q = n2->tail;
@@ -81,11 +95,16 @@ number *addNums(number *n1, number *n2) {
   number *sumNum;
   sumNum = (number *)malloc(sizeof(number));
   initNumber(sumNum);
+
+  if (n1->sign == MINUS && n2->sign == MINUS)
+    sumNum->sign = MINUS;
+
   if (n1->sign != n2->sign) {
     n1->sign = n2->sign;
     sumNum = subNums(n2, n1, 1);
     return sumNum;
   }
+
   while (p && q) {
     int sum = p->data + q->data + carry;
     carry = sum / 10;
@@ -95,16 +114,32 @@ number *addNums(number *n1, number *n2) {
     if (q)
       q = q->prev;
   }
+
   if (carry != 0) {
     pushToNumber(sumNum, carry);
   }
+
   return sumNum;
 }
 
 number *subNums(number *n1, number *n2, int freeNums) {
+  removeTrailingZeros(n1);
+  removeTrailingZeros(n2);
+
+  if (isNumberZero(n1)) {
+    destroyNumber(n1);
+    free(n1);
+    return n2;
+  } else if (isNumberZero(n2)) {
+    destroyNumber(n2);
+    free(n2);
+    return n1;
+  }
+
   number *diffNum = (number *)malloc(sizeof(number));
   initNumber(diffNum);
   node *p, *q;
+
   if (compare(n2, n1) == 1) {
     p = n1->tail;
     q = n2->tail;
@@ -116,14 +151,24 @@ number *subNums(number *n1, number *n2, int freeNums) {
     addToNumber(diffNum, 0);
     return diffNum;
   }
+
   equaliseNums(&n1, &n2);
+
+  if (n1->sign == MINUS && n2->sign == MINUS) {
+    if (compare(n1, n2) == 1)
+      diffNum->sign = PLUS;
+    else
+      diffNum->sign = MINUS;
+  }
+
   if (n1->sign != n2->sign) {
     n1->sign = n2->sign;
     diffNum = addNums(n1, n2);
-    diffNum->sign = MINUS;
     return diffNum;
   }
+
   int borrow = 0;
+
   while (p && q) {
     int sub = q->data - p->data - borrow;
     if (sub < 0) {
@@ -135,6 +180,7 @@ number *subNums(number *n1, number *n2, int freeNums) {
     p = p->prev;
     q = q->prev;
   }
+
   if (freeNums) {
     destroyNumber(n1);
     destroyNumber(n2);
@@ -144,6 +190,7 @@ number *subNums(number *n1, number *n2, int freeNums) {
     removeTrailingZeros(n1);
     removeTrailingZeros(n2);
   }
+
   removeTrailingZeros(diffNum);
   return diffNum;
 }
@@ -262,6 +309,7 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
       destroyNumber(n2);
       free(n1);
       free(n2);
+      Q->sign = Q_sign;
       return Q;
     }
     pushToNumber(Q, 1);
@@ -270,6 +318,7 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
     destroyNumber(n2);
     free(n1);
     free(n2);
+    Q->sign = Q_sign;
     return Q;
   } else if (compare(n1, n2) == 1) {
     if (returnRemainderOrQuotient == 1) {
@@ -283,6 +332,7 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
       free(n1);
       free(n2);
       free(temp);
+      Q->sign = Q_sign;
       return Q;
     }
     destroyNumber(n1);
@@ -291,6 +341,7 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
     free(n2);
     pushToNumber(Q, 0);
     free(temp);
+    Q->sign = Q_sign;
     return Q;
   }
 
@@ -396,7 +447,7 @@ number *power(number *n1, number *n2) {
   }
 
   copyNumber(n2, temp);
-  
+
   while (compare(n1, UnityNumber) != 0) {
     pow = mulNums(temp, n2, 0);
     destroyNumber(temp);
@@ -414,6 +465,4 @@ number *power(number *n1, number *n2) {
   return pow;
 }
 
-//number *sineNumber(number *n1) {
-//  
-//}
+number *compareNums(number *n1, number *n2) {}
