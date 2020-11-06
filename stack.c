@@ -1,6 +1,4 @@
 #include "stack.h"
-#include "functions.h"
-#include "list.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
