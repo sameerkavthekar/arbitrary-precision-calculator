@@ -35,7 +35,7 @@ number *applyOp(number *a, number *b, char op) {
   return NULL;
 }
 
-typedef enum states { OPERATOR, NUMBER, START } states;
+typedef enum states { OPERATOR, NUMBER, START, END } states;
 
 number *infixEval(char *exp) {
   states s1 = START;
@@ -99,7 +99,7 @@ number *infixEval(char *exp) {
       }
 
       if (s1 == OPERATOR) {
-        printf("Syntax Error\n");
+        printf("Syntax Error at %d(%c)\n", i, exp[i]);
         return NULL;
       }
 
@@ -122,7 +122,7 @@ number *infixEval(char *exp) {
   }
 
   if (s1 != NUMBER) {
-    printf("Syntax error\n");
+    printf("Syntax error at: %d(%c)\n", i, exp[i]);
     return NULL;
   }
 
@@ -136,8 +136,30 @@ number *infixEval(char *exp) {
     initNumber(n1);
     initNumber(n2);
   }
+  
   destroyNumber(n1);
   destroyNumber(n2);
 
+  s1 = END;
+
   return npop(&n);
+}
+
+int readline(char *line, int len) {
+	int i;
+	char ch;
+	i = 0;
+	while(i < len - 1) {
+		ch = getchar();
+    if(ch == EOF)
+      return 0;
+		if(ch == '\n') {
+			line[i++] = '\0';
+			return i - 1;
+		}
+		else
+			line[i++] = ch;
+	}
+	line[len - 1] = '\0';
+	return len - 1;
 }

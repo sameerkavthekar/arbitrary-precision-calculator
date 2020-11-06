@@ -101,7 +101,7 @@ number *addNums(number *n1, number *n2) {
 
   if (n1->sign != n2->sign) {
     n1->sign = n2->sign;
-    sumNum = subNums(n2, n1, 1);
+    sumNum = subNums(n1, n2, 1);
     return sumNum;
   }
 
@@ -196,12 +196,15 @@ number *subNums(number *n1, number *n2, int freeNums) {
 }
 
 number *mulNums(number *n1, number *n2, int freeNums) {
+
   number *mulNum = (number *)malloc(sizeof(number));
   initNumber(mulNum);
-  equaliseNums(&n1, &n2);
+  int m_sign = PLUS;
+
   if (n1->sign != n2->sign) {
-    mulNum->sign = MINUS;
+    m_sign = MINUS;
   }
+
   if (isNumberZero(n1) || isNumberZero(n2)) {
     destroyNumber(n1);
     destroyNumber(n2);
@@ -210,45 +213,48 @@ number *mulNums(number *n1, number *n2, int freeNums) {
     addToNumber(mulNum, 0);
     return mulNum;
   }
-  int a = n1->size;
-  int b = n2->size;
-  int i, j, a1 = 0, a2 = 0;
-  int temp_result[2 * a];
-  for (i = 0; i < 2 * a; i++)
-    temp_result[i] = 0;
-  int k = 2 * a - 1;
-  node *t2 = n2->tail;
-  for (i = 0; i < b; i++) {
-    node *t1 = n1->tail;
-    int carry1 = 0, carry2 = 0;
-    for (j = k - i; j > a - 2; j--) {
-      if (t1 != NULL && t2 != NULL) {
-        a1 = t1->data * t2->data + carry1;
-        t1 = t1->prev;
-        carry1 = a1 / 10;
-        a1 = a1 % 10;
-        a2 = temp_result[j] + a1 + carry2;
-        carry2 = a2 / 10;
-        a2 = a2 % 10;
-        temp_result[j] = a2;
-      } else {
-        break;
-      }
+
+  pushToNumber(mulNum, 0);
+  node *p = n2->tail;
+  int i = 0;
+
+  while (p) {
+    node *q = n1->tail;
+    number *temp = (number *)malloc(sizeof(number));
+    initNumber(temp);
+    int carry = 0;
+
+    while (q) {
+      int mul = 0;
+      mul = q->data * p->data + carry;
+      int num = mul % 10;
+      carry = mul / 10;
+      pushToNumber(temp, num);
+      q = q->prev;
     }
-    temp_result[j] = carry1 + carry2 + temp_result[j];
-    a--;
-    t2 = t2->prev;
+
+    if (carry != 0) {
+      pushToNumber(temp, carry);
+    }
+
+    for (int j = 0; j < i; j++) {
+      addToNumber(temp, 0);
+    }
+
+    mulNum = addNums(mulNum, temp);
+    p = p->prev;
+    i++;
   }
-  for (i = k; i >= a - 1 && i >= 0; i--) {
-    pushToNumber(mulNum, temp_result[i]);
-  }
+
   if (freeNums) {
-    destroyNumber(n1);
     destroyNumber(n2);
-    free(n1);
     free(n2);
   }
-  removeTrailingZeros(mulNum);
+
+  destroyNumber(n1);
+  free(n1);
+
+  mulNum->sign = m_sign;
   return mulNum;
 }
 
@@ -396,16 +402,15 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
     }
     destroyNumber(Q);
     free(Q);
-    removeTrailingZeros(temp);
     temp->sign = temp_sign;
     return temp;
   }
 }
 
 number *power(number *n1, number *n2) {
+
   number *pow = (number *)malloc(sizeof(number));
   number *temp = (number *)malloc(sizeof(number));
-  number *temp2 = NULL;
   initNumber(pow);
 
   if (isNumberZero(n1)) {
@@ -446,23 +451,21 @@ number *power(number *n1, number *n2) {
     return UnityNumber;
   }
 
-  copyNumber(n2, temp);
+  addToNumber(pow, 1);
 
-  while (compare(n1, UnityNumber) != 0) {
-    pow = mulNums(temp, n2, 0);
-    destroyNumber(temp);
-    copyNumber(pow, temp);
-    temp2 = n1;
+  while (!isNumberZero(n1)) {
+    pow = mulNums(pow, n2, 0);
     n1 = subNums(UnityNumber, n1, 0);
-    destroyNumber(temp2);
   }
+
   destroyNumber(n1);
   destroyNumber(n2);
   destroyNumber(temp);
   free(n1);
   free(n2);
   free(temp);
+
   return pow;
 }
 
-number *compareNums(number *n1, number *n2) {}
+// number *compareNums(number *n1, number *n2) {}
