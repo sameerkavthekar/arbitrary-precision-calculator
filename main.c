@@ -1,11 +1,12 @@
-#include "main.h"
+#include "infix.h"
 #include "list.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int main() {
+int main(int argc, char **argv) {
+  getArgs(argc, argv);
   char exp[SIZE];
   while (readline(exp, SIZE)) {
     number *n3;

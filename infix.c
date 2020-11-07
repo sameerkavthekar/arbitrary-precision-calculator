@@ -1,10 +1,4 @@
-#define SIZE 2048
-#include "functions.h"
-#include "list.h"
-#include "stack.h"
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "infix.h"
 #include <string.h>
 
 int precedence(char op) {
@@ -51,6 +45,9 @@ number *infixEval(char *exp) {
   int signFlag = 0;
   int len = strlen(exp);
   int i = 0;
+
+  if (strcmp(exp, "exit") == 0)
+    exit(0);
 
   for (i = 0; i < len; i++) {
     if (exp[i] == ' ') {
@@ -136,9 +133,11 @@ number *infixEval(char *exp) {
     initNumber(n1);
     initNumber(n2);
   }
-  
+
   destroyNumber(n1);
   destroyNumber(n2);
+  free(n1);
+  free(n2);
 
   s1 = END;
 
@@ -146,20 +145,49 @@ number *infixEval(char *exp) {
 }
 
 int readline(char *line, int len) {
-	int i;
-	char ch;
-	i = 0;
-	while(i < len - 1) {
-		ch = getchar();
-    if(ch == EOF)
+  int i;
+  char ch;
+  i = 0;
+  while (i < len - 1) {
+    ch = getchar();
+    if (ch == EOF)
       return 0;
-		if(ch == '\n') {
-			line[i++] = '\0';
-			return i - 1;
-		}
-		else
-			line[i++] = ch;
-	}
-	line[len - 1] = '\0';
-	return len - 1;
+    if (ch == '\n') {
+      line[i++] = '\0';
+      return i - 1;
+    } else
+      line[i++] = ch;
+  }
+  line[len - 1] = '\0';
+  return len - 1;
+}
+
+void printInfo() {
+  printf("bc 1.07.1\n");
+  printf("Made as a learning experience by Sameer Kavthekar 111903153\n");
+  printf("This is free and under no warranty\n");
+}
+
+void getArgs(int argc, char **argv) {
+  if (argc > 1) {
+    for (int i = 1; i < argc; i++) {
+      if (strcmp(argv[i], "-h") == 0) {
+        printf("usage: ./bc [options]\n");
+        printf("-h\t\tprint usage and exit\n");
+        printf("-q\t\tdon't print initial banner\n");
+        printf("-v\t\tprint version information and exit\n");
+        exit(0);
+      } else if (strcmp(argv[i], "-q") == 0) {
+        return;
+      } else if (strcmp(argv[i], "-v") == 0) {
+        printInfo();
+        exit(0);
+      } else {
+        printf("Invalid Flag\n");
+        exit(0);
+      }
+    }
+  }
+  printInfo();
+  return;
 }
