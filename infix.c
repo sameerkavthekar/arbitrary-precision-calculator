@@ -34,6 +34,7 @@ typedef enum states { OPERATOR, NUMBER, START, END } states;
 
 number *infixEval(char *exp) {
   states s1 = START;
+  int isRightAssociative = 0;
   number *n1, *n2;
   n1 = (number *)malloc(sizeof(number));
   n2 = (number *)malloc(sizeof(number));
@@ -47,7 +48,7 @@ number *infixEval(char *exp) {
   int len = strlen(exp);
   int i = 0;
 
-  if (strcmp(exp, "exit") == 0)
+  if (strcmp(exp, "quit") == 0)
     exit(0);
 
   for (i = 0; i < len; i++) {
@@ -89,11 +90,9 @@ number *infixEval(char *exp) {
     } else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' ||
                exp[i] == '/' || exp[i] == '%' || exp[i] == '^') {
 
-      if (exp[i] == '-' && s1 == OPERATOR) {
-        if (isdigit(exp[i + 1])) {
-          signFlag = 1;
-          continue;
-        }
+      if (exp[i] == '-' && (s1 == OPERATOR || s1 == START)) {
+        signFlag = 1;
+        continue;
       }
 
       if (s1 == OPERATOR) {
@@ -101,16 +100,25 @@ number *infixEval(char *exp) {
         return NULL;
       }
 
-      while (cisempty(c) != 1 && precedence(cpeek(c)) >= precedence(exp[i])) {
-        n1 = npop(&n);
-        n2 = npop(&n);
-        char op = cpop(&c);
-        npush(&n, applyOp(n1, n2, op));
-        n1 = (number *)malloc(sizeof(number));
-        n2 = (number *)malloc(sizeof(number));
-        initNumber(n1);
-        initNumber(n2);
+      if (exp[i] == '^') {
+        isRightAssociative = 1;
+      } else {
+        isRightAssociative = 0;
       }
+
+      if (!isRightAssociative) {
+        while (cisempty(c) != 1 && precedence(cpeek(c)) >= precedence(exp[i])) {
+          n1 = npop(&n);
+          n2 = npop(&n);
+          char op = cpop(&c);
+          npush(&n, applyOp(n1, n2, op));
+          n1 = (number *)malloc(sizeof(number));
+          n2 = (number *)malloc(sizeof(number));
+          initNumber(n1);
+          initNumber(n2);
+        }
+      }
+
       cpush(&c, exp[i]);
       s1 = OPERATOR;
     } else {
@@ -161,25 +169,6 @@ int readline(char *line, int len) {
   }
   line[len - 1] = '\0';
   return len - 1;
-}
-
-int readFile(char *line, int len, FILE *fp) {
-  int i;
-  char ch;
-  i = 0;
-  printf(" ");
-  while ((ch = fgetc(fp)) != EOF) {
-    if (ch == EOF) {
-      return 0;
-    }
-    if (ch == '\n') {
-      line[i++] = '\0';
-      return 1;
-    } else
-      line[i++] = ch;
-  }
-  line[len - 1] = '\0';
-  return 1;
 }
 
 void printInfo() {

@@ -130,6 +130,7 @@ number *subNums(number *n1, number *n2, int freeNums) {
     free(n1);
     return n2;
   } else if (isNumberZero(n2)) {
+    n1->sign = MINUS;
     destroyNumber(n2);
     free(n2);
     return n1;
@@ -138,6 +139,12 @@ number *subNums(number *n1, number *n2, int freeNums) {
   number *diffNum = (number *)malloc(sizeof(number));
   initNumber(diffNum);
   node *p, *q;
+
+  if (n1->sign != n2->sign) {
+    n1->sign = n2->sign;
+    diffNum = addNums(n1, n2);
+    return diffNum;
+  }
 
   if (compare(n2, n1) == 1) {
     p = n1->tail;
@@ -158,12 +165,6 @@ number *subNums(number *n1, number *n2, int freeNums) {
       diffNum->sign = PLUS;
     else
       diffNum->sign = MINUS;
-  }
-
-  if (n1->sign != n2->sign) {
-    n1->sign = n2->sign;
-    diffNum = addNums(n1, n2);
-    return diffNum;
   }
 
   int borrow = 0;
@@ -411,6 +412,10 @@ number *power(number *n1, number *n2) {
   number *pow = (number *)malloc(sizeof(number));
   number *temp = (number *)malloc(sizeof(number));
   initNumber(pow);
+  int pow_sign = PLUS;
+
+  if (n2->sign == MINUS)
+    pow_sign = MINUS;
 
   if (isNumberZero(n1)) {
     addToNumber(pow, 1);
@@ -421,6 +426,15 @@ number *power(number *n1, number *n2) {
     return pow;
   } else if (isNumberZero(n2)) {
     addToNumber(pow, 0);
+    destroyNumber(n1);
+    destroyNumber(n2);
+    free(n1);
+    free(n2);
+    return pow;
+  }
+
+  if (n1->sign == MINUS) {
+    pushToNumber(pow, 0);
     destroyNumber(n1);
     destroyNumber(n2);
     free(n1);
@@ -464,7 +478,6 @@ number *power(number *n1, number *n2) {
   free(n2);
   free(temp);
 
+  pow->sign = pow_sign;
   return pow;
 }
-
-// number *compareNums(number *n1, number *n2) {}
