@@ -1,4 +1,5 @@
 #include "infix.h"
+#include <stdio.h>
 #include <string.h>
 
 int precedence(char op) {
@@ -162,6 +163,25 @@ int readline(char *line, int len) {
   return len - 1;
 }
 
+int readFile(char *line, int len, FILE *fp) {
+  int i;
+  char ch;
+  i = 0;
+  printf(" ");
+  while ((ch = fgetc(fp)) != EOF) {
+    if (ch == EOF) {
+      return 0;
+    }
+    if (ch == '\n') {
+      line[i++] = '\0';
+      return 1;
+    } else
+      line[i++] = ch;
+  }
+  line[len - 1] = '\0';
+  return 1;
+}
+
 void printInfo() {
   printf("bc 1.07.1\n");
   printf("Made as a learning experience by Sameer Kavthekar 111903153\n");
@@ -183,8 +203,27 @@ void getArgs(int argc, char **argv) {
         printInfo();
         exit(0);
       } else {
-        printf("Invalid Flag\n");
-        exit(0);
+        char exp[SIZE];
+        FILE *fp;
+        fp = fopen(argv[i], "r");
+
+        if (!fp) {
+          printf("File does not exist or does not have right permissions\n");
+          exit(0);
+        }
+
+        while (fscanf(fp, "%[^\n]%*c", exp) != EOF) {
+          printf("-> ");
+          number *n3;
+          n3 = (number *)malloc(sizeof(number));
+          initNumber(n3);
+          n3 = infixEval(exp);
+          if (n3)
+            printNum(*n3);
+          free(n3);
+        }
+
+        fclose(fp);
       }
     }
   }
