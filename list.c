@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Initialise the number
 void initNumber(number *n) {
   n->head = NULL;
   n->tail = NULL;
@@ -10,6 +11,7 @@ void initNumber(number *n) {
   n->sign = PLUS;
 }
 
+// This function appends data to end of given number
 void addToNumber(number *n, int d) {
   node *p = (node *)malloc(sizeof(node));
   if (!p)
@@ -31,6 +33,7 @@ void addToNumber(number *n, int d) {
   return;
 }
 
+// Function to print the number
 void printNum(number n) {
   node *p = n.head;
   int i = 0;
@@ -55,6 +58,7 @@ void printNum(number n) {
   return;
 }
 
+// Function to go  through number and free all nodes
 void destroyNumber(number *n) {
   node *p = n->head;
   if (p == NULL) {
@@ -72,6 +76,7 @@ void destroyNumber(number *n) {
   return;
 }
 
+// Function to add node of given data to beginning of number
 void pushToNumber(number *n, int d) {
   node *nn = (node *)malloc(sizeof(node));
   if (!nn)
@@ -88,16 +93,5 @@ void pushToNumber(number *n, int d) {
   n->head->prev = nn;
   n->head = nn;
   n->size++;
-  return;
-}
-
-void copyNumber(number *n1, number *n2) {
-  n2->sign = n1->sign;
-  n2->size = n1->size;
-  node *p = n1->head;
-  while (p) {
-    addToNumber(n2, p->data);
-    p = p->next;
-  }
   return;
 }

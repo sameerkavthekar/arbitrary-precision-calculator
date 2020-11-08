@@ -65,6 +65,7 @@ void display(n_stack n) {
   printf("\n");
 }
 
+// NUMBER STACK ENDS
 /*------------------------------------------------------------*/
 
 void cinitStack(c_stack *c) {

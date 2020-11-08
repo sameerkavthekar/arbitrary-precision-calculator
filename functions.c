@@ -3,6 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+// NOTE: You might see the frequent use of destroyNumber() and free()
+// This is to ensure that there is absolutely no garbage memory caused
+// in the program.
+// I am freeing all numbers input to the function unless explicitly stated
+
+// Equalise the length of both numbers:
+// eg: 23 and 3 will become 23 and 03
 void equaliseNums(number **n1, number **n2) {
   int i = (*n1)->size;
   int j = (*n2)->size;
@@ -17,8 +24,11 @@ void equaliseNums(number **n1, number **n2) {
       i++;
     }
   }
+  return;
 }
 
+// Function to check if the given number is zero
+// eg: 000000 will return true
 int isNumberZero(number *n1) {
   node *p = n1->head;
   while (p) {
@@ -29,6 +39,8 @@ int isNumberZero(number *n1) {
   return 1;
 }
 
+// Function to remove trailing zeros from number
+// eg: 0000045 will become 45
 void removeTrailingZeros(number *n) {
   if (n->head == NULL) {
     return;
@@ -51,6 +63,10 @@ void removeTrailingZeros(number *n) {
   return;
 }
 
+// Function to compare two numbers based on size and value
+// Returns 1 if n1 > n2
+// Returns -1 if n2 > n2
+// Returns 0 if n1 == n2
 int compare(number *n1, number *n2) {
   node *p = n1->head;
   node *q = n2->head;
@@ -72,6 +88,14 @@ int compare(number *n1, number *n2) {
   return 0;
 }
 
+// END OF UTILITY FUNCTIONS
+/*----------------------------------------------------------------------------------*/
+
+// NOTE: In all functions n1 is second number and n2 is first number
+// eg: 12 + 3;
+// n1 is 3 and n2 is 12
+
+// Function two add two numbers
 number *addNums(number *n1, number *n2) {
 
   removeTrailingZeros(n1);
@@ -95,15 +119,19 @@ number *addNums(number *n1, number *n2) {
   sumNum = (number *)malloc(sizeof(number));
   initNumber(sumNum);
 
+  // If both numbers are negative then final number also negative
   if (n1->sign == MINUS && n2->sign == MINUS)
     sumNum->sign = MINUS;
 
+  // If the sign of both numbers differ then subtract them
+  // eg: -12 + 3 will give output -9
   if (n1->sign != n2->sign) {
     n1->sign = n2->sign;
     sumNum = subNums(n1, n2, 1);
     return sumNum;
   }
 
+  // Iterate both numbers from end and add digits and carry
   while (p && q) {
     int sum = p->data + q->data + carry;
     carry = sum / 10;
@@ -114,6 +142,7 @@ number *addNums(number *n1, number *n2) {
       q = q->prev;
   }
 
+  // Push the carry if it exists
   if (carry != 0) {
     pushToNumber(sumNum, carry);
   }
@@ -121,10 +150,12 @@ number *addNums(number *n1, number *n2) {
   return sumNum;
 }
 
+// Function to subtract two numbers
 number *subNums(number *n1, number *n2, int freeNums) {
   removeTrailingZeros(n1);
   removeTrailingZeros(n2);
 
+  // If either number is zero return
   if (isNumberZero(n1)) {
     destroyNumber(n1);
     free(n1);
@@ -140,12 +171,16 @@ number *subNums(number *n1, number *n2, int freeNums) {
   initNumber(diffNum);
   node *p, *q;
 
+  // If the signs arent equal then add the numbers and set the sign of result to
+  // negative
+  // eg: -12 - 13 will give -25
   if (n1->sign != n2->sign) {
     n1->sign = n2->sign;
     diffNum = addNums(n1, n2);
     return diffNum;
   }
 
+  // Compare and appropriatly set p & q pointers
   if (compare(n2, n1) == 1) {
     p = n1->tail;
     q = n2->tail;
@@ -154,6 +189,12 @@ number *subNums(number *n1, number *n2, int freeNums) {
     p = n2->tail;
     diffNum->sign = MINUS;
   } else if (compare(n1, n2) == 0) {
+    // Special case.
+    // If both numbers are equal then result is zero
+    destroyNumber(n1);
+    destroyNumber(n2);
+    free(n1);
+    free(n2);
     addToNumber(diffNum, 0);
     return diffNum;
   }
@@ -169,6 +210,8 @@ number *subNums(number *n1, number *n2, int freeNums) {
 
   int borrow = 0;
 
+  // Iterate over p and q and subtract each digit
+  // and keep note of borrow
   while (p && q) {
     int sub = q->data - p->data - borrow;
     if (sub < 0) {
@@ -181,6 +224,7 @@ number *subNums(number *n1, number *n2, int freeNums) {
     q = q->prev;
   }
 
+  // If the freeNums flag is set as true then only free both numbers else dont.
   if (freeNums) {
     destroyNumber(n1);
     destroyNumber(n2);
@@ -195,16 +239,20 @@ number *subNums(number *n1, number *n2, int freeNums) {
   return diffNum;
 }
 
+// Program to multiply two numbers.
+// This algorithm is based on the multiplication technique we do on paper.
 number *mulNums(number *n1, number *n2, int freeNums) {
 
   number *mulNum = (number *)malloc(sizeof(number));
   initNumber(mulNum);
   int m_sign = PLUS;
 
+  // Sign checking
   if (n1->sign != n2->sign) {
     m_sign = MINUS;
   }
 
+  // If any of the numbers is zero, return zero
   if (isNumberZero(n1) || isNumberZero(n2)) {
     destroyNumber(n1);
     destroyNumber(n2);
@@ -241,6 +289,8 @@ number *mulNums(number *n1, number *n2, int freeNums) {
       addToNumber(temp, 0);
     }
 
+    // Here we need not call free on temp as addNums() natively frees and
+    // destroys the two numbers
     mulNum = addNums(mulNum, temp);
     p = p->prev;
     i++;
@@ -258,9 +308,11 @@ number *mulNums(number *n1, number *n2, int freeNums) {
   return mulNum;
 }
 
+// Function to calculate division and modulus of two numbers
+// Long Division Algorithm
+// n1 is the divisor and n2 is the number. n2/n1 or n2%n1
 number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
-  // Long Division Algorithm
-  // n1 is the divisor and n2 is the number. n2/n1
+
   number *temp = (number *)malloc(sizeof(number));
   number *temp2 = NULL;
   number *Q = (number *)malloc(sizeof(number));
@@ -269,6 +321,7 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
   int i = 0;
   node *q = n2->head;
 
+  // If the divisor is zero then exit program with error
   if (isNumberZero(n1)) {
     printf("ERROR: Cannot divide with zero\n");
     exit(0);
@@ -277,6 +330,7 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
   int Q_sign = PLUS;
   int temp_sign = PLUS;
 
+  // Sign checking
   switch (n1->sign) {
   case PLUS:
     switch (n2->sign) {
@@ -308,6 +362,8 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
   n2->sign = PLUS;
 
   if (compare(n1, n2) == 0) {
+    // If both numbers are equal then return 1 as quotient
+    // or 0 as remainder
     if (returnRemainderOrQuotient == 1) {
       pushToNumber(Q, 0);
       free(temp);
@@ -327,6 +383,10 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
     Q->sign = Q_sign;
     return Q;
   } else if (compare(n1, n2) == 1) {
+    // Since we dont have floats, if the divisor is greater
+    // than the dividend then we return 0 as quotient and the
+    // dividend as the remainder
+    // eg: 123 / 456 = 0 and 123 % 456 = 123
     if (returnRemainderOrQuotient == 1) {
       node *p = n2->head;
       while (p) {
@@ -351,14 +411,17 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
     return Q;
   }
 
+  // Algorithm starts
   pushToNumber(temp, q->data);
 
+  // If n1(divisor) is more than temp then append the next digit of n2 to temp
   while (compare(temp, n1) == -1) {
     i++;
     q = q->next;
     addToNumber(temp, q->data);
   }
 
+  // Keep iterating till i is less than size of dividend
   while (n2->size > i) {
     int j = 0;
     if (!isNumberZero(temp)) {
@@ -383,16 +446,23 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
     if (q)
       addToNumber(temp, q->data);
   }
+
+  // If quotient is zero then push 0 to Q
   if (Q->size == 0)
     pushToNumber(Q, 0);
+  // We destroy the divisor as we no longer need it
   destroyNumber(n2);
   free(n2);
   if (returnRemainderOrQuotient == 0) {
+    // Return quotient
     destroyNumber(temp);
+    destroyNumber(n1);
     free(temp);
+    free(n1);
     Q->sign = Q_sign;
     return Q;
   } else {
+    // Return remainder
     if (compare(temp, n1) == 0) {
       destroyNumber(n1);
       free(n1);
@@ -401,12 +471,16 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
       return temp;
     }
     destroyNumber(Q);
+    destroyNumber(n1);
     free(Q);
+    return (n1);
     temp->sign = temp_sign;
     return temp;
   }
 }
 
+// Function for power
+// This is implemented using repeated multiplication
 number *power(number *n1, number *n2) {
 
   number *pow = (number *)malloc(sizeof(number));
@@ -414,9 +488,11 @@ number *power(number *n1, number *n2) {
   initNumber(pow);
   int pow_sign = PLUS;
 
+  // Sign check
   if (n2->sign == MINUS)
     pow_sign = MINUS;
 
+  // Zero check
   if (isNumberZero(n1)) {
     addToNumber(pow, 1);
     destroyNumber(n1);
@@ -433,6 +509,8 @@ number *power(number *n1, number *n2) {
     return pow;
   }
 
+  // If sign of exponent is zero then output is 1
+  // eg: 134 ^ 0 is 1
   if (n1->sign == MINUS) {
     pushToNumber(pow, 0);
     destroyNumber(n1);

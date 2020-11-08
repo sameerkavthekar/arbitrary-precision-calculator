@@ -22,9 +22,11 @@ I have tried to implement all integer functions of UNIX bc
 
 - Modulus
 
-- Exponents
+- Exponents (with right associativity)
 
 - Bracket Support
+
+- File Support
 
 ## Installation
 
