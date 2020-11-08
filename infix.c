@@ -89,7 +89,7 @@ number *infixEval(char *exp) {
     } else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' ||
                exp[i] == '/' || exp[i] == '%' || exp[i] == '^') {
 
-      if (exp[i] == '-') {
+      if (exp[i] == '-' && s1 == OPERATOR) {
         if (isdigit(exp[i + 1])) {
           signFlag = 1;
           continue;
