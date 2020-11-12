@@ -473,7 +473,6 @@ number *divNums(number *n1, number *n2, int returnRemainderOrQuotient) {
     destroyNumber(Q);
     destroyNumber(n1);
     free(Q);
-    return (n1);
     temp->sign = temp_sign;
     return temp;
   }
